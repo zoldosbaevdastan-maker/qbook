@@ -1,0 +1,162 @@
+spring:
+  application:
+    name: qbook-backend
+
+  # ===== DATABASE (Supabase PostgreSQL) =====
+  datasource:
+    url: ${SUPABASE_DB_URL:jdbc:postgresql://db.juocnsvljnuxviujmcmu.supabase.co:5432/postgres}
+    username: ${SUPABASE_DB_USER:postgres}
+    password: ${SUPABASE_DB_PASSWORD:ybE1K0U1QdVZfeJY}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+
+  # ===== JPA =====
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        temp:
+          use_jdbc_metadata_defaults: false
+
+  # ===== FLYWAY MIGRATIONS =====
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    out-of-order: false
+
+  # ===== REDIS (Upstash) =====
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      timeout: 2000ms
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+  # ===== EMAIL (Resend) =====
+  mail:
+    host: smtp.resend.com
+    port: 465
+    username: resend
+    password: ${RESEND_API_KEY:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
+  # ===== FILE UPLOAD =====
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 110MB
+
+  # ===== WEBSOCKET =====
+  websocket:
+    allowed-origins: "*"
+
+# ===== SERVER =====
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# ===== QBOOK APP CONFIG =====
+qbook:
+  # JWT
+  jwt:
+    secret: ${JWT_SECRET:qbook-super-secret-jwt-key-2024-production-minimum-256-bits-long}
+    access-token-expiry: 900000        # 15 мин
+    refresh-token-expiry: 2592000000   # 30 дней
+
+  # Supabase
+  supabase:
+    url: ${SUPABASE_URL:https://juocnsvljnuxviujmcmu.supabase.co}
+    anon-key: ${SUPABASE_ANON_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1b2Nuc3Zsam51eHZpdWptY211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDczODcsImV4cCI6MjA5MzYyMzM4N30.4eGw5RRn7lKuafxYScY6-xEMU-uiZciNThK4CtWLYsQ}
+    service-key: ${SUPABASE_SERVICE_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1b2Nuc3Zsam51eHZpdWptY211Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODA0NzM4NywiZXhwIjoyMDkzNjIzMzg3fQ.O6od5CwN2O5Mr5cu6LX3uIG2aDo8KOwBsjH8dgKMhM8}
+    storage-bucket: qbook-media
+
+  # Telegram
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:8621465740:AAEf_aZQnn3I-gYqdNoBUPA2RigMcwgQnu0}
+    bot-username: ${TELEGRAM_BOT_USERNAME:QBookBot}
+    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:qbook-webhook-secret-2024}
+    mini-app-url: ${MINI_APP_URL:https://qbook-miniapp.vercel.app}
+
+  # Business rules
+  commission-rate: 0.10
+  low-balance-threshold: 500
+  booking-ref-prefix: QBK
+  cart-session-ttl-hours: 3
+  binding-code-ttl-hours: 24
+  topup-alert-hours: 2
+  topup-critical-hours: 6
+  max-login-attempts: 5
+  login-block-minutes: 15
+
+  # Anti-fraud thresholds
+  fraud:
+    allow-threshold: 30
+    confirm-threshold: 60
+    review-threshold: 80
+    block-threshold: 80
+
+  # File limits (bytes)
+  media:
+    logo-max-size: 5242880        # 5MB
+    cover-max-size: 10485760      # 10MB
+    gallery-max-size: 10485760    # 10MB
+    item-photo-max-size: 10485760 # 10MB
+    video-max-size: 104857600     # 100MB
+    allowed-image-types: image/jpeg,image/png,image/webp
+    allowed-video-types: video/mp4
+    thumbnail-size: 200
+    webp-quality: 0.85
+
+  # Frontend URLs
+  frontend:
+    site-url: ${SITE_URL:https://qbook-site.vercel.app}
+    miniapp-url: ${MINI_APP_URL:https://qbook-miniapp.vercel.app}
+    verify-url: ${VERIFY_URL:https://qbook-miniapp.vercel.app/booking}
+
+# ===== LOGGING =====
+logging:
+  level:
+    com.qbook: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.flywaydb: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# ===== ACTUATOR =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
